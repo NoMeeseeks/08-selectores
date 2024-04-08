@@ -1,3 +1,13 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: 'selector',
+    loadChildren: () => import('./countries/pages/pages.routes').then(r => r.routes)
+  },
+  {
+    path: '**',
+    redirectTo: 'selector'
+  }
+
+];
