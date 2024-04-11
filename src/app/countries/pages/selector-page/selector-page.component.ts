@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CountriesService } from '../../services/countries.service';
 import { Region } from '../../interfaces/regions.interfaces';
+import { HttpClientModule } from '@angular/common/http';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-selector-page',
@@ -11,7 +13,7 @@ import { Region } from '../../interfaces/regions.interfaces';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-
+    HttpClientModule,
   ],
   templateUrl: 'selector-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,9 +45,11 @@ export class SelectorPageComponent implements OnInit {
   cambiosEnRegion() {
     //cuando hacemos esto hay que limpiar esas subscripciones
     this.form.controls['region']!.valueChanges
-      .subscribe(
-        region => {
-          console.log(region)
+      .pipe(
+        switchMap(region => this.countriesServices.getPaisesPorRegion(region))
+      ).subscribe(
+        paises => {
+          console.log(paises)
         }
       )
   }
