@@ -3,9 +3,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CountriesService } from '../../services/countries.service';
-import { Region } from '../../interfaces/regions.interfaces';
+import { Region, SmallCountry } from '../../interfaces/regions.interfaces';
 import { HttpClientModule } from '@angular/common/http';
-import { switchMap } from 'rxjs';
+import { filter, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-selector-page',
@@ -13,18 +13,20 @@ import { switchMap } from 'rxjs';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    HttpClientModule,
   ],
   templateUrl: 'selector-page.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectorPageComponent implements OnInit {
+
+  public paisesPorRegion: SmallCountry[] = [];
+  public fronteras: SmallCountry[] = [];
 
   public form: FormGroup = this.formBuilder.group(
     {
       region: ['', Validators.required],
       pais: ['', Validators.required],
-      fronteras: ['', Validators.required],
+      frontera: ['', Validators.required],
     }
   )
 
@@ -35,6 +37,7 @@ export class SelectorPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.cambiosEnRegion();
+    this.cambiosEnPais();
   }
 
   get regions(): Region[] {
@@ -46,10 +49,26 @@ export class SelectorPageComponent implements OnInit {
     //cuando hacemos esto hay que limpiar esas subscripciones
     this.form.controls['region']!.valueChanges
       .pipe(
+        tap(() => this.form.get('pais')!.setValue('')),
+        tap(() => this.form.get('frontera')!.setValue('')),
         switchMap(region => this.countriesServices.getPaisesPorRegion(region))
       ).subscribe(
         paises => {
-          console.log(paises)
+          this.paisesPorRegion = paises;
+        }
+      )
+  }
+
+  cambiosEnPais() {
+    this.form.controls['pais']!.valueChanges
+      .pipe(
+        tap(() => this.form.get('frontera')!.setValue('')),
+        filter((value: string) => value.length > 0),
+        switchMap(codigoAlpha => this.countriesServices.getPaisPorAlphaCode(codigoAlpha)),
+        switchMap(pais => this.countriesServices.getFronteraPaisPorCodigo(pais.borders))
+      ).subscribe(
+        frontera => {
+          this.fronteras = frontera;
         }
       )
   }

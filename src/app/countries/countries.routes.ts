@@ -1,7 +1,7 @@
 import { Routes } from "@angular/router";
 import { SelectorPageComponent } from "./pages/selector-page/selector-page.component";
 
-export const routes: Routes = [
+export default [
   {
     path: '',
     children: [
@@ -10,4 +10,4 @@ export const routes: Routes = [
       },
     ]
   },
-]
+] as Routes;
